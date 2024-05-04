@@ -23,11 +23,12 @@ watchEffect( async () => {
   try {
     const data = await ClientsService.getClients();
 console.log("DATA=",data);
-    clients.value = data.clients;
+    clients = data.clients;
     cardTypes = data.cardTypes; //.map(ct => ({...ct, selected:true}));
-    totalClients.value = clients.value.length;
-    filteredClients.value = clients.value.slice(0);
+    totalClients.value = clients.length;
+    filteredClients.value = clients.slice(0);
     selectedCardTypes.value = cardTypes.slice(0);
+    barChartData.value = buildChartData(clients);
   }
   catch(err) {
     loadError.value = err.toString();
@@ -37,13 +38,20 @@ console.log("DATA=",data);
   }
 });
 
+function buildChartData(clients) {
+  return {
+      minValue: Math.min(...clients.map(c => Math.min(...c.accounts.map(a => a.balance)))),
+      maxValue: Math.max(...clients.map(c => Math.max(...c.accounts.map(a => a.balance))))
+    };
+}
+
 function onCardTypeSelectionChanged(types){
   console.log("onCardTypeSelectionChanged: ", types);
   selectedCardTypes.value = types;
 }
 
-function onSetFilteredClients(filteredClients) {
-  console.log("onSetFilteredClients: ", filteredClients);
+function onSetFilteredClients(newFilteredClients) {
+  filteredClients.value = newFilteredClients.slice(0);
 }
 </script>
 
@@ -58,7 +66,6 @@ function onSetFilteredClients(filteredClients) {
     <div class="row">
       <div class="col-3">
         <ClientsFilter :clients="clients" @setClients="onSetFilteredClients" />
-        <!-- <app-clients-filter [clients]="clients" (setClients)="setFilteredClients($event)"></app-clients-filter> -->
       </div>
       <div class="col-7 align-self-center">
         <CardTypesLegend :cardTypes="cardTypes" @cardTypeSelectionChanged="onCardTypeSelectionChanged" />
