@@ -1,18 +1,26 @@
 <script setup>
+import { ref } from 'vue';
 
 const props = defineProps({
   cardTypes: Array
 });
 
-function selectCardType(type, evt) {
+const emit = defineEmits(['cardTypeSelectionChanged']);
 
+const selCardTypes = ref(props.cardTypes.map(ct => ({type:ct, selected:true})));
+
+function selectCardType(type) {
+  type.selected = !type.selected;
+
+  const selectedTypes = selCardTypes.value.filter(t => t.selected).map(t => t.type);
+  emit('cardTypeSelectionChanged', selectedTypes);
 }
 </script>
 
 <template>
   <div class="account-chart-legend">
-    <span v-for="item in cardTypes" @click="selectCardType(item, $event)" class="legend-item">
-      <input type="checkbox" checked /> {{item.name}}<div class="legend-box" :style="{'background-color': item.color}"></div>
+    <span v-for="item in selCardTypes" @click="selectCardType(item)" class="legend-item">
+      <input type="checkbox" :checked="item.selected" /> {{item.type.name}}<div class="legend-box" :style="{'background-color': item.type.color}"></div>
     </span>
   </div>
 </template>

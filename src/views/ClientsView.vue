@@ -2,6 +2,7 @@
 import { ref, watchEffect } from 'vue'
 import { ClientsService } from '@/services/clients.service'
 import Client from '@/components/Client.vue';
+import ClientsFilter from '@/components/ClientsFilter.vue';
 import CardTypesLegend from '@/components/CardTypesLegend.vue';
 
 let clients = [];
@@ -23,10 +24,10 @@ watchEffect( async () => {
     const data = await ClientsService.getClients();
 console.log("DATA=",data);
     clients.value = data.clients;
-    cardTypes = data.cardTypes.map(ct => ({...ct, selected:true}));
+    cardTypes = data.cardTypes; //.map(ct => ({...ct, selected:true}));
     totalClients.value = clients.value.length;
     filteredClients.value = clients.value.slice(0);
-    rebuildSelectedCardTypes();
+    selectedCardTypes.value = cardTypes.slice(0);
   }
   catch(err) {
     loadError.value = err.toString();
@@ -36,8 +37,13 @@ console.log("DATA=",data);
   }
 });
 
-function rebuildSelectedCardTypes() {
-  selectedCardTypes.value = cardTypes.filter(ct => ct.selected);
+function onCardTypeSelectionChanged(types){
+  console.log("onCardTypeSelectionChanged: ", types);
+  selectedCardTypes.value = types;
+}
+
+function onSetFilteredClients(filteredClients) {
+  console.log("onSetFilteredClients: ", filteredClients);
 }
 </script>
 
@@ -51,11 +57,11 @@ function rebuildSelectedCardTypes() {
   <div v-if="!loadingClient && !loadError" class="content">
     <div class="row">
       <div class="col-3">
+        <ClientsFilter :clients="clients" @setClients="onSetFilteredClients" />
         <!-- <app-clients-filter [clients]="clients" (setClients)="setFilteredClients($event)"></app-clients-filter> -->
-        [clients filter...]
       </div>
       <div class="col-7 align-self-center">
-        <CardTypesLegend :cardTypes="cardTypes" />
+        <CardTypesLegend :cardTypes="cardTypes" @cardTypeSelectionChanged="onCardTypeSelectionChanged" />
       </div>
       <div class="col-2 align-self-center showing-clients">Showing {{filteredClients.length}} of {{totalClients}} clients </div>
     </div>

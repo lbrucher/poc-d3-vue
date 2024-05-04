@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import AccountsChart from '@/components/AccountsChart.vue';
 
 const props = defineProps({
@@ -9,15 +9,22 @@ const props = defineProps({
 });
 
 const balancesRep = ref(buildBalanceRep());
-const accountsToShow = ref(buildAccountsToShow());
+const accountsToShow = ref([]);
 
+refreshAccountsToShow();
 
 //console.log("Props Client: ", props.client);
 
 
-function buildAccountsToShow() {
+watch(() => props.cardTypes, () => {
+  //console.log("CARD TYPES CHANGED: ", props.cardTypes);
+  refreshAccountsToShow();
+});
+
+
+function refreshAccountsToShow() {
   const types = props.cardTypes.map(ct => ct.name);
-  return props.client.accounts.filter(a => types.includes(a.card_type));
+  accountsToShow.value = props.client.accounts.filter(a => types.includes(a.card_type));
 }
 
 function buildBalanceRep() {
@@ -68,7 +75,6 @@ function showAccountDetails() {
 function onChartClicked() {
   showAccountDetails();
 }
-
 </script>
 
 <template>

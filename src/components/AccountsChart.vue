@@ -10,15 +10,12 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['click']);
-
-
-
 </script>
 
 <template>
   <div class="account-chart-container">
     <div id="accountChart" class="account-chart" @click="$emit('click')">
-      [ CHART ]
+      [ CHART: {{ cardTypes.map(t => t.name).join(', ')}} ]
     </div>
   </div>
 </template>
